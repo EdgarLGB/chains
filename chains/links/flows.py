@@ -37,8 +37,10 @@ class Flows(link.Link):
             flow_id = flow_utils.flow_tuple(packet)
             self._flows[flow_id].add_packet(packet)
 
-            # Yield flows that are ready to go
-            for flow in list(self._flows.values()):
+            # Yield flows that are ready to go in timeline order
+            sorted_flows = list(self._flows.values())
+            sorted_flows.sort(cmp=lambda x, y: int((x.meta['end'] - y.meta['end']).total_seconds()))
+            for flow in sorted_flows:
                 if flow.ready():
                     flow_info = flow.get_flow()
                     yield flow_info
